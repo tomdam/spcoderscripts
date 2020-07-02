@@ -1,45 +1,45 @@
 ﻿byte N = 1;
 byte S = 2;
 byte E = 4;
-byte W = 8;
+byte W = 8; 
 
-var SIDES    = new Dictionary<string, int>() {{ "N", 1 }, { "S", 2 }, { "E", 4 }, { "W", 8 }};
-var DX       = new Dictionary<string, int>() {{ "E", 1 }, { "W", -1 }, { "N", 0 }, { "S", 0 } };
-var DY       = new Dictionary<string, int>() {{ "E", 0 }, { "W", 0 }, { "N", -1 }, { "S", 1 }};
-var OPPOSITE = new Dictionary<string, int>() {{ "E", W }, { "W", E }, { "N", S }, { "S", N }};
+var SIDES    = new Dictionary<char, byte>() {{ 'N', 1 }, { 'S', 2 }, { 'E', 4 }, { 'W', 8 }};
+var DX       = new Dictionary<char, sbyte>() {{ 'E', 1 }, { 'W', -1 }, { 'N', 0 }, { 'S', 0 } };
+var DY       = new Dictionary<char, sbyte>() {{ 'E', 0 }, { 'W', 0 }, { 'N', -1 }, { 'S', 1 }};
+var OPPOSITE = new Dictionary<char, byte>() {{ 'E', W }, { 'W', E }, { 'N', S }, { 'S', N }};
 
 Random r = new Random();
-void RandomizeDirections(string[] array) 
-{
+void RandomizeDirections(char[] array) {
+    
     for (var i = array.Length - 1; i > 0; i--) {
         int j       = r.Next(i + 1);
-        string temp = array[i];
+        char temp = array[i];
         array[i] = array[j];
         array[j] = temp;
     }
 }
 
-void MazeGenerationPassage(int cx, int cy, int[,] grid, List<int[,]> grids)
+void MazeGenerationPassageWithSavingHistory(byte cx, byte cy, byte[,] grid, List<byte[,]> grids)
 {
-    grids.Add(( int[,])grid.Clone());
-    var directions = new string[] {"N", "S", "E", "W"};
+    grids.Add((byte[,])grid.Clone());
+    var directions = new char[] {'N', 'S', 'E', 'W'};
     RandomizeDirections(directions);
     
     for(var i = 0; i < directions.Length; i++)
     {
         var direction = directions[i];
-        int nx       = cx + DX[direction]; 
-        int ny       = cy + DY[direction];
+        byte nx       = (byte)(cx + DX[direction]); 
+        byte ny       = (byte)(cy + DY[direction]);
         if ((ny >= 0 && ny < grid.GetLength(0)) && (nx >= 0 && nx < grid.GetLength(1)) && grid[ny,nx] == 0)
         {
           grid[cy,cx] |= SIDES[direction];          
           grid[ny,nx] |= OPPOSITE[direction];
-          MazeGenerationPassage(nx, ny, grid, grids);
+          MazeGenerationPassageWithSavingHistory(nx, ny, grid, grids);
         }
     }
 }
 
-string PrintMaze(int[,] grid, int startRow, int finishRow)
+string PrintMaze(byte[,] grid, byte startRow, byte finishRow)
 {
     StringBuilder sb = new StringBuilder();
     sb.Append(" ");
@@ -77,25 +77,26 @@ string PrintMaze(int[,] grid, int startRow, int finishRow)
     return sb.ToString();
 }
 
-int height = 10;
-int width  = 10;
+byte height = 10;
+byte width  = 10;
 
 //list of all copies of grids generated along the way
-List<int[,]> grids = new List<int[,]>();
-int[,] grid    = new int[height, width];
-MazeGenerationPassage(0, 0, grid, grids);
+List<byte[,]> grids = new List<byte[,]>();
+byte[,] grid    = new byte[height, width];
 
-int startRow  = r.Next(height);
-int finishRow = r.Next(height);
+MazeGenerationPassageWithSavingHistory(0, 0, grid, grids); 
+
+byte startRow  = (byte)r.Next(height);
+byte finishRow = (byte)r.Next(height);
 
 string maze = PrintMaze(grid, startRow, finishRow);
 logger.ClearLog();
 logger.Log("\n"+maze);
 
 foreach(var g in grids)
-{
-    System.Threading.Thread.Sleep(80);
+{    
     string maze = PrintMaze(g, startRow, finishRow);
     logger.ClearLog();
     logger.Log(maze, false);
+    System.Threading.Thread.Sleep(80);
 }
