@@ -1,6 +1,8 @@
 ﻿//Implementation of the Recursive backtracking algorithm for maze generation in C#.
 //Parts of the alghoritm taken from http://weblog.jamisbuck.org/2011/2/7/maze-generation-algorithm-recap.html (Ruby implementation of maze generation)
 
+//You can check the BasicMaze for full comments of the code
+
 byte N = 1;
 byte S = 2;
 byte E = 4;
@@ -24,6 +26,8 @@ void RandomizeDirections(char[] array) {
 
 void MazeGenerationPassageWithSavingHistory(byte cx, byte cy, byte[,] grid, List<byte[,]> grids)
 {
+    //grids is a list where we store the clones of all states of grid during the generation
+    //we will later use this list to animate the maze
     grids.Add((byte[,])grid.Clone());
     var directions = new char[] {'N', 'S', 'E', 'W'};
     RandomizeDirections(directions);
@@ -96,6 +100,8 @@ string maze = PrintMaze(grid, startRow, finishRow);
 logger.ClearLog();
 logger.Log("\n"+maze);
 
+//go through the list of all states of grid and draw them in log window
+//sleep for 80 miliseconds between every two drawings and clear the log
 foreach(var g in grids)
 {    
     string maze = PrintMaze(g, startRow, finishRow);
