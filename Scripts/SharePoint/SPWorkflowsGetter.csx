@@ -4,6 +4,7 @@ public class WorkflowDetails
 {
     public string Site {get; set;}
     public string List {get; set;}
+    public string ContentType {get; set;}
     public string Workflow {get; set;}
     public string Type {get; set;}
 }
@@ -31,6 +32,7 @@ public class SPSharePointWorkflowGetter : BasePlugin
         ctx.Load(web, w => w.Url); 
         ctx.Load(web.Webs);
         ctx.Load(web.Lists);
+        ctx.Load(web.ContentTypes);
         ctx.ExecuteQuery();    
         Console.WriteLine("Checking " + web.Url);
         
@@ -51,6 +53,29 @@ public class SPSharePointWorkflowGetter : BasePlugin
                         wd.List     = l.Title;
                         wd.Workflow = w.Name;
                         wd.Type     = "2010";
+                        wfDetailsList.Add(wd);
+                    }
+                }
+            }        
+        }
+        
+        if (web.ContentTypes != null && web.ContentTypes.Count > 0)
+        {
+            foreach(var ct in web.ContentTypes)
+            {
+                ctx.Load(ct.WorkflowAssociations);
+                ctx.ExecuteQuery();
+                
+                if (ct.WorkflowAssociations != null && ct.WorkflowAssociations.Count > 0)
+                {
+                    foreach(var w in ct.WorkflowAssociations)
+                    {
+                        if (w.Name.Contains("(Previous Version")) continue;
+                        var wd         = new WorkflowDetails();
+                        wd.Site        = web.Url;
+                        wd.ContentType = ct.Name;
+                        wd.Workflow    = w.Name;
+                        wd.Type        = "2010";
                         wfDetailsList.Add(wd);
                     }
                 }
